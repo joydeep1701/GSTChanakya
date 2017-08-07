@@ -777,7 +777,7 @@ def register():
         'group_name' TEXT, 'hsn' TEXT, 'taxrate' TEXT, 'uom' TEXT)
         """,table=table)
         #Stock Items table
-        table = str(company_id)+"_stock_items"
+        table = str(company_id)+"_stockitems"
         db.execute("""
         CREATE TABLE :table ('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         'stock_item_name' TEXT, 'stock_item_group' TEXT, 'stock_item_hsn' TEXT,
@@ -785,20 +785,25 @@ def register():
         """,table=table)
         #Sales View table
         table = str(company_id)+"_gstr1_sales"
+        master_sales = str(company_id)+"master_sales"
+        sales = str(company_id)+"sales"
+        stock_items = str(company_id)+"_stockitems"
+        ledgers = str(company_id)+"ledgers"
         db.execute("""
-        CREATE VIEW :table AS SELECT * FROM '1_sales'
-        INNER JOIN '1_master_sales' ON '1_master_sales'.id = bill_id
-        INNER JOIN '1_stockitems' ON '1_stockitems'.id = item_id
-        INNER JOIN '1_ledgers' ON '1_ledgers'.id = debtor_id
+        CREATE VIEW :table AS SELECT * FROM :sales
+        INNER JOIN :master_sales ON :master_sales.id = bill_id
+        INNER JOIN :stock_items ON :stock_items.id = item_id
+        INNER JOIN :ledgers ON :ledgers.id = debtor_id
         INNER JOIN (
                     SELECT bill_id AS invoice_number,
-                    SUM(amount + (amount*'1_stockitems'.stock_item_taxrate)/100)
+                    SUM(amount + (amount*:stock_items.stock_item_taxrate)/100)
                     AS invoice_value
-                    FROM '1_sales'
-                    INNER JOIN '1_stockitems' ON '1_stockitems'.id = item_id
+                    FROM :sales
+                    INNER JOIN :stock_items ON :stock_items.id = item_id
                     GROUP BY bill_id
                     ) ON invoice_number = bill_id
-        """,table=table)
+        """,table=table,master_sales=master_sales,sales=sales,stock_items=stock_items,
+        ledgers=ledgers)
         # INSERT Purchase,Sales,Unregistered
         table = str(company_id)+"_ledgers"
         db.execute("INSERT INTO :table (ledger_name,ledger_group) VALUES ('Purchase','Purchase')",table=table)
@@ -815,4 +820,4 @@ END GROUP: Login & register
 """
 # ------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)
