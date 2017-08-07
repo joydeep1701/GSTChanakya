@@ -1,0 +1,155 @@
+{% extends "layout.html" %} {% block main %}
+<div class="row">
+  <form class="" action="" method="post">
+
+    <div class="col-sm-10">
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="alert alert-warning">Payment Voucher</div>
+        </div>
+        <div class="col-sm-5"></div>
+        <div class="col-sm-2"><input type="text" name="date" class="datepicker" readonly required style="width:80px" placeholder="Date"></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="form-group">
+            <input type="text" class="form-control" autocomplete="off" oninput="suggestac(this.value,this)" name="saleacname" placeholder="Payment A/C Name" style="width:400px;" required>
+          </div>
+        </div>
+      </div><br>
+      <div class="row">
+        <div class="">
+          <table class="table table-stripped table-bordered">
+            <thead>
+              <th style="width:200px">Name</th>
+              <th>Details</th>
+              <th style="width:60px">Delete</th>
+            </thead>
+            <tbody id="table_tbody">
+            </tbody>
+            <tfoot>
+              <td><button type="button" class="btn btn-primary" onclick="addrows()"><span class="glyphicon glyphicon-plus"></span></button></td>
+
+              <td></td>
+              <td></td>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-10">
+          <textarea name="narration" rows="2" cols="80">Narration</textarea>
+        </div>
+        <div class="col-sm-2">
+          <button class="btn btn-success" type="submit">Submit</button>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div class="col-sm-2" id="suggest">
+  </div>
+</div>
+<script>
+function suggestac(data,elem){
+  last_input_elem = elem
+  var xh = new XMLHttpRequest();
+  xh.onreadystatechange = function(){
+    if(xh.status == 200 && xh.readyState == 4)
+    viewresponse(JSON.parse(xh.response),elem)
+  };
+  xh.open("GET","/master/ledger/getledgers/byname/"+data);
+  xh.send();
+}
+function suggestitm(data,elem){
+  console.log("itm");
+  last_input_elem = elem
+  var xh = new XMLHttpRequest();
+  xh.onreadystatechange = function(){
+    if(xh.status == 200 && xh.readyState == 4)
+    viewlegderdata(JSON.parse(xh.response),elem)
+  };
+  xh.open("GET","/master/ledger/getledgers/byname/"+data);
+  xh.send();
+}
+function viewresponse(data){
+  console.log("data");
+  innerHTML = "<div class=\"list-group\">";
+  data.forEach(function(elem){
+    innerHTML += "<a href=\"#\" class=\"list-group-item\" onclick=\"update_ledger_name('"+elem["ledger_name"]+"')\"><p>"+elem["ledger_name"]
+    innerHTML += "<span class=\"badge\" >"+elem["ledger_group"]+"</span>"
+    innerHTML += "</p></a>"
+
+  });
+  innerHTML += "</div>"
+  document.getElementById('suggest').innerHTML = innerHTML
+}
+function viewlegderdata(data){
+  console.log("data");
+  innerHTML = "<div class=\"list-group\">";
+  data.forEach(function(elem){
+    innerHTML += "<a href=\"#\" class=\"list-group-item\" onclick=\"update_ledger_data('"+elem["ledger_name"]+"','"+elem["id"]+"')\"><p>"+elem["ledger_name"]
+    innerHTML += "<span class=\"badge\" >"+elem["ledger_group"]+"</span>"
+    innerHTML += "</p></a>"
+
+  });
+  innerHTML += "</div>"
+  document.getElementById('suggest').innerHTML = innerHTML
+}
+function update_ledger_name(name){
+  last_input_elem.value = name;
+  document.getElementById('suggest').innerHTML = "";
+}
+function update_ledger_data(name,id){
+  last_input_elem.value = name;
+  document.getElementById('suggest').innerHTML = "";
+  console.log("Called");
+  var xh = new XMLHttpRequest();
+  xh.onreadystatechange = function(){
+    if(this.status == 200 && this.readyState == 4){
+      view_vouchers(JSON.parse(xh.response),id);
+    }
+  };
+  xh.open("GET","/voucher/purchase/get/"+id);
+  xh.send();
+}
+function view_vouchers(data,deb_id){
+  var column = last_input_elem.parentElement.parentElement.children[1];
+  var innerHTML = "<table class=\"table table-bordered\">"
+  innerHTML += "<thead>"
+  innerHTML +=  "<tr><th>Voucher No.</th><th>Bill Amount</th><th>Paid Amount</th><th>Pay Amount</th><th>Final Amount</th><th>Status</th><th>Pay</th></tr>"
+  innerHTML += "</thead>"
+  innerHTML += "<tbody>"
+  data.forEach(function(elem){
+    if(parseFloat(parseFloat(elem["amount"])+parseFloat(elem["tax"]) - parseFloat(elem["paid_amount"])) > 0){
+      innerHTML += "<tr>"
+      innerHTML += "<input type=\"hidden\" name=\"debtor_id\" value=\""+deb_id+"\"/>"
+      innerHTML += "<input type=\"hidden\" name=\"bill_no\" value=\""+elem["bill_id"]+"\"/>"
+      innerHTML += "<td><p>"+elem["inv_no"]+"</p></td>"
+      innerHTML += "<td><input type=\"text\" class=\"form-control\" value=\""+parseFloat(parseFloat(elem["amount"])+parseFloat(elem["tax"]))+"\" disabled></td>"
+      innerHTML += "<td><input type=\"text\" class=\"form-control\" value=\""+parseFloat(elem["paid_amount"])+"\" disabled></td>"
+      innerHTML += "<td><input type=\"text\" class=\"form-control\" name=\"bill_amount\" value=\"\"></td>"
+      innerHTML += "<td><input type=\"text\" class=\"form-control\" value=\"\" disabled></td>"
+      innerHTML += "<td><span class=\"label label-danger\">Due</span></td>"
+      innerHTML += "<td><input type=\"checkbox\"/></td>"
+      innerHTML += "</tr>"
+    }
+  });
+  innerHTML += "</tbody>"
+  innerHTML += "<tfoot><tr><td></td><td></td><td>Total:</td><td></td><td></td><td></td><td></td></tr></tfoot>"
+  innerHTML += "</table>"
+  if(data.length == 0)
+    innerHTML = "<p>On Account Payment:<input type=\"text\" value=\"\" required name=\"bill_amount\" placeholder=\"Amount\" class=\"form-control\"></p>";
+    innerHTML += "<input type=\"hidden\" name=\"debtor_id\" value=\""+deb_id+"\"/>"
+    innerHTML += "<input type=\"hidden\" name=\"bill_no\" value=\"on_acc\"/>"
+  column.innerHTML = innerHTML;
+}
+function addrows(){
+  var table =  document.getElementById("table_tbody")
+  var row = table.insertRow(-1);
+  row.insertCell(0).innerHTML =   "<input type=\"text\" autocomplete=\"off\" value=\"\" name=\"itm_name\" required oninput=\"suggestitm(this.value,this)\"class=\"form-control\" style=\"width:200px\">"
+
+  row.insertCell(1);
+  row.insertCell(2).innerHTML = "<button type=\"button\" class=\"btn btn-danger\" onclick=\"this.parentElement.parentElement.parentElement.deleteRow(parseInt(this.parentElement.parentElement.rowIndex)-1)\"><span class=\"glyphicon glyphicon-trash\"></span></button>"
+}
+</script>
+{% endblock %}

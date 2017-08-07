@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block main %}
+<div class="row">
+  <div class="col-sm-12">
+    <div class="row">
+      <div class="col-sm-2">
+        <div class="alert alert-warning">Reciept Voucher</div>
+      </div>
+      <div class="col-sm-7"></div>
+      <div class="col-sm-1">
+        <div class="form-group">
+          <input type="text" value="{{ date }}" name="date" placeholder="date" class="form-control"  maxlength="2" minlength="2" required autofocus>
+        </div>
+      </div>
+      <div class="col-sm-1">
+        <div class="form-group">
+          <input type="text" value="{{ month }}" name="month" placeholder="month" class="form-control"  maxlength="2" minlength="2" required autofocus>
+        </div>
+      </div>
+      <div class="col-sm-1">
+        <div class="form-group">
+          <input type="text" value="{{ year }}" name="year" placeholder="year" class="form-control"  maxlength="4" minlength="4" required autofocus>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6">
+
+      </div>
+      <div class="col-sm-6">
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+
+      </div>
+    </div>
+    <div class="row">
+
+    </div>
+  </div>
+</div>
+{% endblock %}
