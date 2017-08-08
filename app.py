@@ -785,10 +785,10 @@ def register():
         """,table=table)
         #Sales View table
         table = str(company_id)+"_gstr1_sales"
-        master_sales = str(company_id)+"master_sales"
-        sales = str(company_id)+"sales"
+        master_sales = str(company_id)+"_master_sales"
+        sales = str(company_id)+"_sales"
         stock_items = str(company_id)+"_stockitems"
-        ledgers = str(company_id)+"ledgers"
+        ledgers = str(company_id)+"_ledgers"
         db.execute("""
         CREATE VIEW :table AS SELECT * FROM :sales
         INNER JOIN :master_sales ON :master_sales.id = bill_id
