@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Sales Voucher{% endblock %} 
+{% block title %}Sales Voucher{% endblock %}
 {% block main %}
 <div class="row">
 
@@ -55,7 +55,7 @@
       <div class="row">
         <div class="col-sm-12">
           <div class="form-group">
-            <input type="text" class="form-control" autocomplete="off" oninput="show_modal();suggestac(this.value,this)" name="saleacname" value="Sales Acc" placeholder="Sales A/C Name" style="width:400px;" required>
+            <input type="hidden" class="form-control" autocomplete="off" oninput="show_modal();suggestac(this.value,this)" name="saleacname" value="Sales Acc" placeholder="Sales A/C Name" style="width:400px;" required>
           </div>
         </div>
       </div><br>
@@ -77,7 +77,7 @@
             <tbody id="table_tbody">
               <tr>
                 <input type="hidden" name="itm_id" value="">
-                <td><input type="text" required autocomplete="off" value="" name="itm_name" oninput="show_modal();suggestitm(this.value,this)"class="form-control" style="width:200px"></td>
+                <td><input type="text" required autocomplete="off" value="" name="itm_name" oninput="show_modal();suggestitm(this.value,this)" class="form-control" style="width:200px" placeholder="Item Name"></td>
                 <td><input type="text" value="" class="form-control" disabled></td>
                 <td><input type="text" required value="" autocomplete="off" name="qty" class="form-control"></td>
                 <td><input type="text" required value="" autocomplete="off" name="rate" class="form-control" style="width:80px"></td>

@@ -24,7 +24,7 @@
           <td>{{ "%0.2f"%(row["invoice_value"] + row["roundoff"]) }}</td>
           <td>{{ state_codes[row["place_of_supply"]] }}</td>
           <td>{{ row["stock_item_taxrate"] }}</td>
-          <td>{{ row["amount"] }}</td>
+          <td>{{ "{:0.2f}".format(row["amount"]) }}</td>
         </tr>
       {% endfor %}
     </tbody>

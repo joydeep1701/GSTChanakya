@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block main %}
+<div class="row">
+  <a href="{{url}}" onclick="toggle()" id="login" class="btn btn-primary" target="_blank">Login to Google Drive</a>
+</div>
+<div class="row" id="key_form" style="display:none;">
+  <div class="row">
+    <div class="form-group">
+      <input type="text" class="form-control" id="key" placeholder="Enter Key Here">
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn btn-success" onclick="sendkey()">Submit</button>
+  </div>
+</div>
+<script>
+  function toggle() {
+    document.getElementById('login').style.display = "none";
+    document.getElementById('key_form').style.display = "block";
+  }
+  function sendkey(){
+    key = document.getElementById('key').value;
+    if(key == "")
+      return;
+    var xhttp = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append("key",key);
+    xhttp.onreadystatechange = function() {
+      if(xhttp.status == 200 && xhttp.readyState == 4){
+          toastr["success"]("Data is uploaded to Google Drive", "Success")
+      }
+      else if(xhttp.status == 500){
+          toastr["error"]("Some error occurred while upload. Regenerate Key", "Failed")
+      }
+    };
+
+    xhttp.open("POST","/backup/");
+    xhttp.send(fd);
+    }
+</script>
+{% endblock %}

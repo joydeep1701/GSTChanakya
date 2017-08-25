@@ -1,13 +1,15 @@
 #!c:/Python34/python.exe -u
-from sql import *
 from flask import Flask, flash, redirect, render_template, request, session, url_for, Response, make_response
 from flask_session import Session
 from tempfile import gettempdir
 import json
+from sql import *
 from helpers import *
+from drive import *
 
 db = SQL("sqlite:///arthasastra.db")
 hsn = SQL("sqlite:///hsn.db")
+backup = GoogleDrive()
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = gettempdir()
@@ -569,77 +571,36 @@ def gstr1_main():
     return render_template('gstr1.html')
 @app.route('/gstr1/b2b/<m>',methods=["GET","POST"])
 def gstr1_b2b(m):
-    b2b = str(session["company_id"])+"_gstr1_sales"
-    ur_id = get_ledger_id("Unregistered Sale")
-    rows = db.execute("SELECT * FROM :table WHERE month=:month AND debtor_id != :ur_id",table=b2b,month=m,ur_id=ur_id)
-
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2b",m)
     return render_template("gstr1_b2b.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/b2b/<m>/print')
 def print_gstr1_b2b(m):
-    b2b = str(session["company_id"])+"_gstr1_sales"
-    ur_id = get_ledger_id("Unregistered Sale")
-    rows = db.execute("SELECT * FROM :table WHERE month=:month AND debtor_id != :ur_id",table=b2b,month=m,ur_id=ur_id)
-
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2b",m)
     return render_template("gstr1_b2b_print.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/b2cl/<m>')
 def gstr1_b2cl(m):
-    b2cl = str(session["company_id"])+"_gstr1_sales"
-    ur_id = get_ledger_id("Unregistered Sale")
-    home_state = '19'
-    rows = db.execute("""SELECT * FROM :table WHERE month=:month
-    AND debtor_id = :ur_id AND invoice_value > 250000 AND place_of_supply!=:hs""",
-    table=b2cl,month=m,ur_id=ur_id,hs=home_state)
-
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2cl",m)
     return render_template("gstr1_b2cl.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/b2cl/<m>/print')
 def print_gstr1_b2cl(m):
-    b2cl = str(session["company_id"])+"_gstr1_sales"
-    ur_id = get_ledger_id("Unregistered Sale")
-    home_state = '19'
-    rows = db.execute("""SELECT * FROM :table WHERE month=:month
-    AND debtor_id = :ur_id AND invoice_value > 250000 AND place_of_supply!=:hs""",
-    table=b2cl,month=m,ur_id=ur_id,hs=home_state)
-
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2cl",m)
     return render_template("gstr1_b2cl_print.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/b2cs/<m>')
 def gstr1_b2cs(m):
-    b2cs = str(session["company_id"])+"_gstr1_sales"
-    home_state = '19'
-    ur_id = get_ledger_id("Unregistered Sale")
-    rows = db.execute("""SELECT * FROM :table WHERE month=:month
-    AND debtor_id = :ur_id AND
-    ((place_of_supply = :hs)
-      OR (place_of_supply != :hs AND invoice_value < 250001))
-    """,table=b2cs,month=m,ur_id=ur_id,hs=home_state)
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2cs",m)
     return render_template("gstr1_b2cs.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/b2cs/<m>/print')
 def print_gstr1_b2cs(m):
-    b2cs = str(session["company_id"])+"_gstr1_sales"
-    home_state = '19'
-    ur_id = get_ledger_id("Unregistered Sale")
-    rows = db.execute("""SELECT * FROM :table WHERE month=:month
-    AND debtor_id = :ur_id AND
-    ((place_of_supply = :hs)
-      OR (place_of_supply != :hs AND invoice_value < 250001))
-    """,table=b2cs,month=m,ur_id=ur_id,hs=home_state)
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
+    rows = get_gstr1_vouchers("b2cs",m)
     return render_template("gstr1_b2cs_print.html",data=rows,month=m,state_codes=state_codes)
 @app.route('/gstr1/download/<t>/<m>')
 def gstr1_download(t,m):
     company = db.execute("SELECT * FROM master WHERE company_id=:id",id=session["company_id"])
     filename = company[0]["company_name"].strip()
-    state_codes = {"35":"35-Andaman and Nicobar Islands","37":"37-Andhra Pradesh","12":"12-Arunachal Pradesh","18":"18-Assam","10":"10-Bihar","04":"04-Chandigarh","22":"22-Chhattisgarh","26":"26-Dadra and Nagar Haveli","25":"25-Daman and Diu","07":"07-Delhi","30":"30-Goa","24":"24-Gujarat","06":"06-Haryana","02":"02-Himachal Pradesh","01":"01-Jammu and Kashmir","20":"20-Jharkhand","29":"29-Karnataka","32":"32-Kerala","31":"31-Lakshadweep","23":"23-Madhya Pradesh","27":"27-Maharashtra","14":"14-Manipur","17":"17-Meghalaya","15":"15-Mizoram","13":"13-Nagaland","21":"21-Odisha","34":"34-Puducherry","03":"03-Punjab","08":"08-Rajasthan","11":"11-Sikkim","33":"33-Tamil Nadu","36":"36-Telangana","16":"16-Tripura","09":"09-Uttar Pradesh","05":"05-Uttarakhand","97":"97-Other Territory","19":"19-West Bengal"}
 
     if t == "b2b":
         csv = "GSTIN/UIN of Recipient,Invoice Number,Invoice date,Invoice Value,Place Of Supply,Reverse Charge,Invoice Type,E-Commerce GSTIN,Rate,Taxable Value,Cess Amount"
-        b2b = str(session["company_id"])+"_gstr1_sales"
-        ur_id = get_ledger_id("Unregistered Sale")
-        rows = db.execute("SELECT * FROM :table WHERE month=:month AND debtor_id != :ur_id",table=b2b,month=m,ur_id=ur_id)
+        rows = get_gstr1_vouchers("b2b",m)
         for row in rows:
             csv += "\n"
             if len(str(row["date"])) == 1:
@@ -655,14 +616,7 @@ def gstr1_download(t,m):
             csv += str("%0.2f"%row["amount"])+","
     if t == "b2cs":
         csv = "Type,Place Of Supply,Rate,Taxable Value,Cess Amount,E-Commerce GSTIN"
-        b2cs = str(session["company_id"])+"_gstr1_sales"
-        home_state = '19'
-        ur_id = get_ledger_id("Unregistered Sale")
-        rows = db.execute("""SELECT * FROM :table WHERE month=:month
-        AND debtor_id = :ur_id AND
-        ((place_of_supply = :hs)
-          OR (place_of_supply != :hs AND invoice_value < 250001))
-        """,table=b2cs,month=m,ur_id=ur_id,hs=home_state)
+        rows = get_gstr1_vouchers("b2cs",m)
         for row in rows:
             csv += "\nOE,"
             csv += state_codes[row["place_of_supply"]]+","
@@ -671,12 +625,7 @@ def gstr1_download(t,m):
             csv += ","
     if t == "b2cl":
         csv = "Invoice Number,Invoice date,Invoice Value,Place Of Supply,Rate,Taxable Value,Cess Amount,E-Commerce GSTIN"
-        b2cl = str(session["company_id"])+"_gstr1_sales"
-        ur_id = get_ledger_id("Unregistered Sale")
-        home_state = '19'
-        rows = db.execute("""SELECT * FROM :table WHERE month=:month
-        AND debtor_id = :ur_id AND invoice_value > 250000 AND place_of_supply!=:hs""",
-        table=b2cl,month=m,ur_id=ur_id,hs=home_state)
+        rows = get_gstr1_vouchers("b2cs",m)
         for row in rows:
             csv += "\n"
             if len(str(row["date"])) == 1:
@@ -725,8 +674,6 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     else:
-        #ImmutableMultiDict([('gstin', '19AAAAA1234E1ZT'), ('repassword', 'admin'),
-        # ('company_name', 'A1 CLAMPS INDIA PVT LTD'), ('userid', 'klipco'), ('address', '1A BONFIELD LANE KOL-1'), ('password', 'admin')])
         s = dict(request.form)
         rows = db.execute("SELECT * FROM master WHERE company_name=:name OR company_gstin=:gstin",name=s["company_name"][0],gstin=s["gstin"][0])
         if len(rows) > 0:
@@ -849,6 +796,15 @@ def logout():
 """
 END GROUP: Login & register
 """
+@app.route('/backup/',methods=["GET","POST"])
+def backup_gdrive():
+    if request.method == "GET":
+        url = backup.OauthURL()
+        return render_template('backup.html',url=url)
+    else:
+        backup.upload(request.form.get('key'))
+        return "Success"
+
 # ------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
