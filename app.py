@@ -568,6 +568,8 @@ def gstr1_main():
             return redirect(url_for('gstr1_b2cl',m=request.form.get('month')))
         if request.form.get("category") == "b2cs":
             return redirect(url_for('gstr1_b2cs',m=request.form.get('month')))
+        if request.form.get("category") == "r3":
+            return redirect(url_for('gstr3',m=request.form.get('month')))
     return render_template('gstr1.html')
 @app.route('/gstr1/b2b/<m>',methods=["GET","POST"])
 def gstr1_b2b(m):
@@ -644,6 +646,10 @@ def gstr1_download(t,m):
     # to be downloaded, instead of just printed on the browser
     response.headers["Content-Disposition"] = "attachment;filename="+filename+" "+m+"_"+t+".csv"
     return response
+@app.route("/gstr3/<m>")
+def gstr3(m):
+    data = get_gstr3_data(m)
+    return render_template("gstr3.html",data=data)
 """
 END Group: GST RETURNS
 """
