@@ -98,21 +98,20 @@ def add_stock_item_inventory_master():
                 flash("Given Stock Group Not Found","warning")
                 return render_template("add_stock_item.html")
             else:
-                hsns = hsn.execute("SELECT * FROM hsn_codes WHERE HSN=:hsn",hsn=request.form.get('hsn'))
+                hsns = hsn.execute("SELECT * FROM hsn_codes WHERE HSN:hsn",hsn=request.form.get('hsn'))
                 if len(hsns) == 0:
                     flash("Invalid HSN code","warning")
-                    return render_template("add_stock_item.html")
-                else:
-                    table_name =  str(session["company_id"])+"_stockitems"
-                    db.execute("""INSERT INTO :table_name (stock_item_name,stock_item_group,
-                    stock_item_hsn,stock_item_taxrate,stock_item_uom,rate)
-                    VALUES (:name,:group,:hsn,:taxrate,:uom,:rate)"""
-                    ,table_name=table_name,name=request.form.get('stock_name'),
-                    group=request.form.get('under_group'),hsn=request.form.get('hsn'),
-                    taxrate=request.form.get('taxrate'),uom=request.form.get('units_om'),
-                    rate=request.form.get('rate'))
-                    flash("Stock Item Added","success")
-                    return render_template("add_stock_item.html")
+                    #return render_template("add_stock_item.html")                
+                table_name =  str(session["company_id"])+"_stockitems"
+                db.execute("""INSERT INTO :table_name (stock_item_name,stock_item_group,
+                stock_item_hsn,stock_item_taxrate,stock_item_uom,rate)
+                VALUES (:name,:group,:hsn,:taxrate,:uom,:rate)"""
+                ,table_name=table_name,name=request.form.get('stock_name'),
+                group=request.form.get('under_group'),hsn=request.form.get('hsn'),
+                taxrate=request.form.get('taxrate'),uom=request.form.get('units_om'),
+                rate=request.form.get('rate'))
+                flash("Stock Item Added","success")
+                return render_template("add_stock_item.html")
 # --------------Inventory----STOCK----ITEM----ADD--END-
 # --------------Inventory----STOCK----ITEM----DISPLAY--
 @app.route("/master/inventory/display/stock/item")

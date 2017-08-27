@@ -3,7 +3,7 @@
 {% block main %}
 <div class="row">
 
-  <form class="form" action="" method="post">
+  <form class="form" action="" method="post" onsubmit="return check_date();">
 
     <div class="col-sm-12">
       <div class="row">
@@ -64,21 +64,21 @@
           <table class="table table-striped table-bordered" id="table">
             <thead>
               <th style="width:220px;">Item Name</th>
-              <th>HSN</th>
+              <th style="width:50px;">HSN</th>
               <th>Quantity</th>
               <th>Rate</th>
               <th>Discount</th>
-              <th>Amount</th>
+              <th style="width:140px;">Amount</th>
               <th>GST@</th>
               <th>Tax</th>
-              <th>Amount With Tax</th>
+              <th style="width:140px;">Amount With Tax</th>
               <th>Delete</th>
             </thead>
             <tbody id="table_tbody">
               <tr>
                 <input type="hidden" name="itm_id" value="">
                 <td><input type="text" required autocomplete="off" value="" name="itm_name" oninput="show_modal();suggestitm(this.value,this)" class="form-control" style="width:200px" placeholder="Item Name"></td>
-                <td><input type="text" value="" class="form-control" disabled></td>
+                <td><input type="hidden" value="" class="form-control" disabled></td>
                 <td><input type="text" required value="" autocomplete="off" name="qty" class="form-control"></td>
                 <td><input type="text" required value="" autocomplete="off" name="rate" class="form-control" style="width:80px"></td>
                 <td><input type="text" required value="" autocomplete="off" name="discount" class="form-control"></td>
@@ -132,6 +132,13 @@
   </form>
 </div>
 <script>
+  function check_date() {
+    if(document.getElementsByName('date')[0].value == "") {
+      toastr["error"]("Invoice date not given","Date Not Set")
+      return false
+    }
+    return true
+  }
   function show_modal(){
     $("#message").modal();
     document.getElementById('modal_head').innerHTML = "Suggestions";
@@ -213,7 +220,7 @@
       var table = document.getElementById("table_tbody")
       var row = table.insertRow(-1);
       row.insertCell(0).innerHTML =   "<input type=\"hidden\" name=\"itm_id\" value=\"\">"+"<input type=\"text\" autocomplete=\"off\" value=\"\" name=\"itm_name\" required oninput=\"show_modal();suggestitm(this.value,this)\"class=\"form-control\" style=\"width:200px\">"
-      row.insertCell(1).innerHTML =   "<input type=\"text\" value=\"\" class=\"form-control\" disabled>"
+      row.insertCell(1).innerHTML =   "<input type=\"hidden\" value=\"\" class=\"form-control\" disabled>"
       row.insertCell(2).innerHTML =   "<input type=\"text\" value=\"\" required autocomplete=\"off\" name=\"qty\" class=\"form-control\">"
       row.insertCell(3).innerHTML =   "<input type=\"text\" value=\"\" required autocomplete=\"off\" name=\"rate\" class=\"form-control\">"
       row.insertCell(4).innerHTML =   "<input type=\"text\" value=\"\" required autocomplete=\"off\" name=\"discount\" class=\"form-control\">"
@@ -285,12 +292,17 @@
     last_input_elem.value = name;
     document.getElementById('suggest').innerHTML = "";
     $("#message").modal('hide');
-    if(gstin != ""){
+    if (gstin == "null") {
+        document.getElementById("place_of_supply").value = "19"
+    }
+    else if(gstin != ""){
       document.getElementById("place_of_supply").value = gstin[0]+gstin[1]
+      console.log( gstin[0]+gstin[1]);
     }
     else{
-      document.getElementById("place_of_supply").value = ""
+      document.getElementById("place_of_supply").value = "";
     }
+
   }
 
 </script>
